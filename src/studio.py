@@ -7,8 +7,8 @@ from typing import Any
 
 from src.agents.storyboarder import generate_storyboard
 from src.llm_client import generate_youtube_metadata
-from src.media.image_gen import generate_scene_image
 from src.media.renderer import assemble_video
+from src.media.video_gen import generate_scene_media
 from src.media.voice import synthesize_voiceover
 from src.rag.researcher import generate_research_brief
 
@@ -27,7 +27,9 @@ async def create_video_from_topic(
 ) -> dict[str, Any]:
     """
     End-to-end autonomous video creation flow:
-    Topic -> Grounded Research Brief -> Script & Storyboard -> Voiceover & Subtitles -> Image Keyframes -> Rendered Video MP4 -> YouTube SEO Metadata.
+    Topic -> Grounded Research Brief -> Script & Storyboard -> Voiceover & Subtitles
+    -> AI Video Clips (Veo 3.1) or Image Keyframes (FLUX) -> Rendered Video MP4
+    -> YouTube SEO Metadata.
 
     Args:
         topic: Video topic or trend title.
@@ -77,21 +79,22 @@ async def create_video_from_topic(
             voice_key=voice_key
         )
 
-        print(f"[Studio] Step 4.{scene_num}: Generating keyframe image...")
-        img_path = os.path.join(project_dir, f"scene_{scene_num}.png")
-        luxury_prompt = f"{visual_prompt}, ultra detailed 3d pixar animation style, 8k render, vibrant lighting, highly expressive characters, polished masterpiece artwork"
-        generate_scene_image(
-            prompt=luxury_prompt,
-            output_image_path=img_path,
-            aspect_ratio=aspect_ratio
+        print(f"[Studio] Step 4.{scene_num}: Generating scene media (Veo video / FLUX image)...")
+        media_result = generate_scene_media(
+            prompt=visual_prompt,
+            output_dir=project_dir,
+            scene_num=scene_num,
+            aspect_ratio=aspect_ratio,
         )
 
         scenes_data.append({
             "scene_num": scene_num,
             "narration": narration,
-            "image_path": img_path,
+            "media_path": media_result["media_path"],
+            "media_type": media_result["media_type"],
             "audio_path": audio_path,
-            "camera_motion": scene.get("camera_motion", "zoom_in")
+            "camera_motion": scene.get("camera_motion", "zoom_in"),
+            "source": media_result.get("source", "unknown"),
         })
 
     print("[Studio] Step 5: Stitching scenes and rendering final video...")
@@ -111,6 +114,11 @@ async def create_video_from_topic(
 
     total_duration = render_result.get("duration") if isinstance(render_result, dict) else None
 
+    # Log media source breakdown
+    veo_count = sum(1 for s in scenes_data if s["media_type"] == "video")
+    image_count = sum(1 for s in scenes_data if s["media_type"] == "image")
+    print(f"[Studio] Media breakdown: {veo_count} Veo AI video clips, {image_count} FLUX image scenes")
+
     return {
         "status": "completed",
         "title": storyboard.get("title", topic),
@@ -120,7 +128,9 @@ async def create_video_from_topic(
         "scenes_count": len(scenes_data),
         "research_used": research_summary is not None,
         "youtube_metadata": youtube_metadata,
-        "render_details": render_result
+        "render_details": render_result,
+        "veo_scenes": veo_count,
+        "image_scenes": image_count,
     }
 
 
