@@ -59,7 +59,7 @@ async def create_video_from_topic(
 
     scenes_data = []
     aspect_ratio = "9:16" if format_type == "short" else "16:9"
-    voice_key = storyboard.get("voice_key", "en_male_doc")
+    voice_key = "hi_male_doc" if language == "hi" else storyboard.get("voice_key", "en_male_doc")
 
     for scene in storyboard.get("scenes", []):
         scene_num = scene["scene_num"]
@@ -79,8 +79,9 @@ async def create_video_from_topic(
 
         print(f"[Studio] Step 4.{scene_num}: Generating keyframe image...")
         img_path = os.path.join(project_dir, f"scene_{scene_num}.png")
+        luxury_prompt = f"{visual_prompt}, ultra detailed 3d pixar animation style, 8k render, vibrant lighting, highly expressive characters, polished masterpiece artwork"
         generate_scene_image(
-            prompt=visual_prompt,
+            prompt=luxury_prompt,
             output_image_path=img_path,
             aspect_ratio=aspect_ratio
         )
@@ -89,7 +90,8 @@ async def create_video_from_topic(
             "scene_num": scene_num,
             "narration": narration,
             "image_path": img_path,
-            "audio_path": audio_path
+            "audio_path": audio_path,
+            "camera_motion": scene.get("camera_motion", "zoom_in")
         })
 
     print("[Studio] Step 5: Stitching scenes and rendering final video...")

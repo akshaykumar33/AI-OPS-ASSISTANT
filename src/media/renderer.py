@@ -1,5 +1,6 @@
-"""Automated video assembly & rendering pipeline with Ken Burns motion transform & dynamic captions."""
+"""Automated video assembly & rendering pipeline with dynamic motion transforms & animated captions."""
 
+import math
 import os
 from typing import Any
 
@@ -22,60 +23,87 @@ def create_scene_clip(
     image_path: str,
     audio_path: str,
     narration_text: str = "",
-    target_size: tuple[int, int] = (1920, 1080),
-    zoom_effect: bool = True
+    target_size: tuple[int, int] = (1080, 1920),
+    camera_motion: str = "zoom_in"
 ):
     """
-    Create a single video scene combining keyframe image with voiceover audio clip,
-    dynamic Ken Burns zoom animation, and viral subtitle overlay.
+    Create an animated video scene clip combining keyframe image with voiceover audio,
+    dynamic Ken Burns scale & pan camera motion, and animated neon subtitle cards.
 
     Args:
         image_path: Path to keyframe image.
         audio_path: Path to voiceover audio clip.
         narration_text: Scene caption text.
         target_size: (width, height) resolution tuple.
-        zoom_effect: Apply subtle Ken Burns scale motion.
+        camera_motion: "zoom_in", "zoom_out", or "pan_horizontal".
 
     Returns:
         MoviePy ImageClip configured with audio, motion, and captions.
     """
     audio_clip = AudioFileClip(audio_path)
-    scene_duration = audio_clip.duration
+    scene_duration = max(audio_clip.duration, 0.5)
 
     if IS_MOVIEPY_V2:
         img_clip = ImageClip(image_path).with_duration(scene_duration).resized(target_size)
 
-        # Dynamic Ken Burns zoom transformation & Subtitle Burn-In per frame
+        # Dynamic Camera Motion Transform & Subtitle Burn-In per frame
         def frame_transform(get_frame, t):
             frame = get_frame(t)  # NumPy RGB array
             img = Image.fromarray(frame)
             orig_w, orig_h = target_size
+            progress = min(t / scene_duration, 1.0)
 
-            # 1. Ken Burns Zoom Motion (1.0x -> 1.15x scale)
-            if zoom_effect:
-                progress = t / max(scene_duration, 0.1)
-                scale = 1.0 + 0.15 * progress
+            # 1. Dynamic Motion Animation Modes
+            if camera_motion == "zoom_in":
+                # Smooth scale from 1.0x to 1.25x with upward center drift
+                scale = 1.0 + 0.25 * progress
                 new_w, new_h = int(orig_w * scale), int(orig_h * scale)
                 resized_img = img.resize((new_w, new_h), Image.Resampling.BILINEAR)
 
-                # Center crop back to target_size
                 left = (new_w - orig_w) // 2
+                top = int((new_h - orig_h) * (0.5 - 0.15 * progress))
+                top = max(0, min(top, new_h - orig_h))
+                img = resized_img.crop((left, top, left + orig_w, top + orig_h))
+
+            elif camera_motion == "zoom_out":
+                # Scale down from 1.25x to 1.02x with downward center drift
+                scale = 1.25 - 0.23 * progress
+                new_w, new_h = int(orig_w * scale), int(orig_h * scale)
+                resized_img = img.resize((new_w, new_h), Image.Resampling.BILINEAR)
+
+                left = (new_w - orig_w) // 2
+                top = int((new_h - orig_h) * (0.35 + 0.15 * progress))
+                top = max(0, min(top, new_h - orig_h))
+                img = resized_img.crop((left, top, left + orig_w, top + orig_h))
+
+            else:  # "pan_horizontal" or default
+                # Scale to 1.22x and pan left to right
+                scale = 1.22
+                new_w, new_h = int(orig_w * scale), int(orig_h * scale)
+                resized_img = img.resize((new_w, new_h), Image.Resampling.BILINEAR)
+
+                max_left = new_w - orig_w
+                left = int(max_left * progress)
                 top = (new_h - orig_h) // 2
                 img = resized_img.crop((left, top, left + orig_w, top + orig_h))
 
-            # 2. Burn-In Styled Subtitle Card
+            # 2. Burn-In Styled Subtitle Card with Animated Neon Glow
             if narration_text:
                 draw = ImageDraw.Draw(img)
-                y_pos = int(orig_h * 0.78)
+                y_pos = int(orig_h * 0.80)
                 margin = 40
 
                 # Truncate caption for high-retention short reading
-                display_text = narration_text if len(narration_text) < 70 else f"{narration_text[:67]}..."
+                display_text = narration_text if len(narration_text) < 75 else f"{narration_text[:72]}..."
 
-                # Semi-transparent dark background card with yellow neon border
-                box_rect = [margin, y_pos - 25, orig_w - margin, y_pos + 45]
-                draw.rectangle(box_rect, fill=(10, 15, 26), outline=(255, 215, 0), width=4)
-                draw.text((orig_w // 2, y_pos), display_text, fill=(255, 255, 255), anchor="mm")
+                # Pulsing yellow neon border intensity
+                pulse = math.sin(t * 8.0) * 0.5 + 0.5
+                border_color = (int(255 * (0.8 + 0.2 * pulse)), int(215 * (0.8 + 0.2 * pulse)), 0)
+
+                # Dark rounded rectangle box with neon stroke
+                box_rect = [margin, y_pos - 30, orig_w - margin, y_pos + 50]
+                draw.rectangle(box_rect, fill=(10, 15, 26), outline=border_color, width=5)
+                draw.text((orig_w // 2, y_pos + 10), display_text, fill=(255, 255, 255), anchor="mm")
 
             return np.array(img)
 
@@ -91,7 +119,7 @@ def create_scene_clip(
 def assemble_video(
     scenes: list[dict[str, Any]],
     output_video_path: str,
-    aspect_ratio: str = "16:9",
+    aspect_ratio: str = "9:16",
     fps: int = 24,
     enable_bgm: bool = True
 ) -> dict[str, Any]:
@@ -99,7 +127,7 @@ def assemble_video(
     Stitch video scenes (keyframe images + voiceover audio clips + ducked BGM) into a final MP4 video.
 
     Args:
-        scenes: List of scene dicts containing 'image_path', 'audio_path', and optional 'narration'.
+        scenes: List of scene dicts containing 'image_path', 'audio_path', 'narration', and 'camera_motion'.
         output_video_path: Path for output .mp4 file.
         aspect_ratio: "16:9" or "9:16".
         fps: Target frames per second.
@@ -113,17 +141,20 @@ def assemble_video(
     target_size = (1920, 1080) if aspect_ratio == "16:9" else (1080, 1920)
 
     video_clips = []
+    motion_types = ["zoom_in", "pan_horizontal", "zoom_out"]
 
-    for scene in scenes:
+    for idx, scene in enumerate(scenes):
         image_path = scene["image_path"]
         audio_path = scene["audio_path"]
         narration = scene.get("narration", "")
+        motion = scene.get("camera_motion", motion_types[idx % len(motion_types)])
+
         scene_clip = create_scene_clip(
             image_path=image_path,
             audio_path=audio_path,
             narration_text=narration,
             target_size=target_size,
-            zoom_effect=True
+            camera_motion=motion
         )
         video_clips.append(scene_clip)
 
@@ -156,6 +187,8 @@ def assemble_video(
         logger=None
     )
 
+    total_dur = sum(c.duration for c in video_clips)
+
     # Close clips to free memory
     final_clip.close()
 
@@ -169,7 +202,7 @@ def assemble_video(
     return {
         "status": "success",
         "video_path": output_video_path,
-        "total_duration": sum(c.duration for c in video_clips),
+        "duration": total_dur,
         "scenes_count": len(scenes),
         "aspect_ratio": aspect_ratio,
         "bgm_applied": enable_bgm
