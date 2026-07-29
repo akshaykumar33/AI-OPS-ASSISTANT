@@ -107,11 +107,14 @@ async def create_video_from_topic(
     metadata_path = os.path.join(project_dir, "youtube_metadata.json")
     await asyncio.to_thread(_write_json_file, metadata_path, youtube_metadata)
 
+    total_duration = render_result.get("duration") if isinstance(render_result, dict) else None
+
     return {
         "status": "completed",
         "title": storyboard.get("title", topic),
         "video_path": output_video_path,
         "format": format_type,
+        "duration": total_duration,
         "scenes_count": len(scenes_data),
         "research_used": research_summary is not None,
         "youtube_metadata": youtube_metadata,
