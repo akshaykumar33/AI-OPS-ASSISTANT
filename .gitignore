@@ -1,8 +1,33 @@
+# Environments & Secrets
 .env
-__pycache__/
-*.pyc
+.env.local
+*.env
+
+# Python
 .venv/
 venv/
+ENV/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Databases & Rendered Media Outputs
 data/chroma/
+data/outputs/*.mp4
+data/outputs/*.wav
+data/outputs/*.srt
+data/outputs/*.png
+data/outputs/*.jpg
+
+# Node.js & Next.js Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+frontend/out/
+frontend/.vercel/
+
+# OS & Logs
 *.log
 .DS_Store
+Thumbs.db

@@ -1,89 +1,121 @@
-# Personal AI Ops Assistant
+# AI Ops Assistant & Autonomous Media Studio 🚀🎬
 
-A personal assistant that answers questions from your own documents (RAG),
-completes multi-step tasks using AI agents, connects to tools via MCP,
-and runs automated routines. Built layer by layer — see `CLAUDE.md` for
-the full roadmap and current phase.
+An enterprise-grade, full-stack autonomous AI content production studio & personal AI Ops assistant. Built with **Next.js 15 (App Router)**, **React 19**, **FastAPI**, **ChromaDB RAG**, **Google Gemini**, **Google Imagen 3**, **EdgeTTS**, **MoviePy v2**, and **AWS Lambda**.
 
-## Quickstart (Local Python)
+---
+
+## 🌟 Key Features
+
+* **📽️ Autonomous AI Media Studio**: Automatically converts trending topics into high-retention 9:16 Shorts or 16:9 AniDoc documentaries with deep-bass voiceover, burnt-in SRT captions, and dynamic Ken Burns visual transforms.
+* **🔥 Real-Time Viral Trend Hunter**: Fetches breaking viral topics across AI News, Space, Ancient History, Wildlife, and Comedy via DuckDuckGo API.
+* **🧠 Grounded RAG Vector Search**: ChromaDB vector store + Google Gemini 2.0 Flash for grounded research briefs and document Q&A.
+* **⚡ Multi-Agent Pipeline**: Researcher → Writer → Reviewer workflow orchestration using LangGraph / LangChain abstractions.
+* **🎨 Enterprise SaaS UI**: High-contrast monochromatic Next.js 15 App Router frontend with `shadcn/ui`, TanStack Query, Framer Motion, and Recharts.
+* **☁️ AWS Lambda & Serverless Ready**: Configured with `Mangum` ASGI adapter and `serverless.yml` for zero-management serverless deployment.
+
+---
+
+## 🏗️ Architecture Stack
+
+```
+AI-OPS-ASSISTANT/
+├── frontend/             # Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui
+│   ├── src/app/          # Dashboard, Studio, Chatbot, Trends, Pipeline, Settings
+│   └── src/lib/          # Typed API Client & TanStack Query Hooks
+├── src/                  # FastAPI Backend Engine
+│   ├── agents/           # Single & Multi-Agent Editorial Workflows
+│   ├── api/              # FastAPI Router & Mangum Lambda Handler
+│   ├── media/            # ImageGen (Imagen 3 / FLUX.2), Voice (EdgeTTS), Video Renderer
+│   ├── rag/              # ChromaDB Ingestion & Vector Retrieval
+│   └── studio.py         # Autonomous Media Studio End-to-End Orchestrator
+├── tests/                # Pytest Test Suite (13/13 passing)
+├── docker-compose.yml    # Full-Stack Docker Containerization
+└── serverless.yml        # AWS Lambda Infrastructure Configuration
+```
+
+---
+
+## 🚀 Quickstart Guide
+
+### 1. Backend Setup (FastAPI & Python)
 
 ```bash
+# Clone the repository
+git clone https://github.com/akshaykumar33/AI-OPS-ASSISTANT.git
+cd AI-OPS-ASSISTANT
+
+# Create virtual environment & install dependencies
 python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-py -m pip install -r requirements.txt
-cp .env.example .env            # then add your GEMINI_API_KEY (free, get one at aistudio.google.com/app/apikey)
+source .venv/bin/activate       # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env and add your GEMINI_API_KEY (from https://aistudio.google.com/app/apikey)
+
+# Launch FastAPI Backend Server
+python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Run FastAPI server locally:
-```bash
-py -m uvicorn src.api.main:app --reload
-```
+FastAPI Documentation available at: **`http://127.0.0.1:8000/docs`**
 
 ---
 
-## Docker Commands (Full Stack: Assistant + n8n)
+### 2. Frontend Setup (Next.js 15 App Router)
 
-### 1. Build & Start Containers (Background mode)
 ```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install Node dependencies
+npm install
+
+# Start Next.js Development Server
+npm run dev
+```
+
+Next.js Frontend available at: **`http://localhost:3000`**
+
+---
+
+## 🐳 Docker Deployment (Full Stack + n8n)
+
+```bash
+# Build and launch containers in background
 docker compose up -d --build
+
+# Services running:
+# - FastAPI Assistant API: http://localhost:8000
+# - n8n Workflow Automation: http://localhost:5678
 ```
-- **FastAPI Assistant API**: [http://localhost:8000](http://localhost:8000) (Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs))
-- **n8n Automation UI**: [http://localhost:5678](http://localhost:5678)
-
-### 2. View Running Containers & Status
-```bash
-docker compose ps
-```
-
-### 3. View Live Container Logs
-- View logs for all services:
-  ```bash
-  docker compose logs -f
-  ```
-- View logs for a specific service:
-  ```bash
-  docker compose logs -f assistant
-  docker compose logs -f n8n
-  ```
-
-### 4. Stop Containers (Keep Data)
-```bash
-docker compose stop
-```
-
-### 5. Tear Down Containers & Cleanup
-- Stop and remove containers + networks:
-  ```bash
-  docker compose down
-  ```
-- Stop, remove containers, and purge persistent volumes (reset all n8n data):
-  ```bash
-  docker compose down -v
-  ```
 
 ---
 
-## Running Tests & Code Quality
+## 🧪 Testing & Code Quality
 
 ```bash
-# Run unit tests
-py -m pytest tests/ -v
+# Run backend test suite (13 tests)
+python -m pytest tests/ -v
 
 # Run code linter
-py -m ruff check src/ tests/
+python -m ruff check src/ tests/
+
+# Build Next.js production bundle
+cd frontend && npm run build
 ```
 
 ---
 
-## Project Structure
+## ⚡ Serverless Deployment (AWS Lambda)
 
+Deploy backend to AWS Lambda with Serverless Framework:
+
+```bash
+npm install -g serverless
+serverless deploy
 ```
-src/
-  rag/          Phase 1 - document ingestion, embedding, retrieval
-  agents/       Phase 2-3 - single agent, multi-agent (agentic AI)
-  mcp/          Phase 4 - MCP servers + client
-  automation/   Phase 5 - scheduled/event-triggered runs
-  api/          Phase 6 - FastAPI HTTP wrapper
-tests/          Mirrors src/ structure - unit tests for all phases
-data/docs/      Drop your source documents here for ingestion
-```
+
+---
+
+## 📄 License
+MIT License. Created by [Akshay Kumar](https://github.com/akshaykumar33).
