@@ -1,0 +1,32 @@
+# --- Phase 1: RAG core ---
+chromadb>=0.5.5
+sentence-transformers>=3.0.1
+google-genai>=1.2.0
+python-dotenv>=1.0.1
+pypdf>=4.3.1
+
+# --- Phase 2-3: Agents / Agentic AI ---
+langgraph>=0.2.14
+langchain>=0.2.14
+langchain-google-genai>=2.0.7
+
+# --- Phase 4: MCP ---
+mcp>=1.0.0
+
+# --- Phase 6: API / Deploy ---
+fastapi>=0.112.2
+uvicorn>=0.30.6
+
+# --- Media & Video Production (100% Free Stack) ---
+edge-tts>=6.1.12
+moviepy>=1.0.3
+ffmpeg-python>=0.2.0
+pillow>=10.4.0
+requests>=2.32.3
+duckduckgo-search>=6.2.10
+
+# --- Testing / Linting ---
+pytest>=8.3.2
+ruff>=0.6.3
+pytest-asyncio==0.24.0
+
