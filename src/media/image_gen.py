@@ -14,7 +14,7 @@ CINEMATIC_BOOSTERS = (
 )
 
 # Latest generation models supported
-IMAGEN_MODELS = ["imagen-3.0-generate-001", "imagen-3.0-fast-generate-001"]
+IMAGEN_MODELS = ["imagen-3.0-generate-002", "imagen-3.0-generate-001", "imagen-3.0-fast-generate-001"]
 POLLINATIONS_MODELS = ["flux", "flux-realism", "turbo"]
 
 
