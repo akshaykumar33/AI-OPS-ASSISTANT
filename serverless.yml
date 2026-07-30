@@ -3,14 +3,30 @@ service: ai-media-studio-backend
 provider:
   name: aws
   runtime: python3.11
-  stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'prod'}
+  region: ${opt:region, 'ap-south-1'}
   memorySize: 1024
   timeout: 60
   environment:
     GEMINI_API_KEY: ${env:GEMINI_API_KEY}
     GEMINI_MODEL: ${env:GEMINI_MODEL, 'gemini-2.0-flash'}
     CHROMA_DB_PATH: /tmp/chroma
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+    layer: true
+    slim: true
+
+package:
+  individually: true
+  patterns:
+    - '!frontend/**'
+    - '!.venv/**'
+    - '!node_modules/**'
+    - '!tests/**'
+    - '!.git/**'
+    - '!data/outputs/**'
 
 functions:
   api:
@@ -25,3 +41,4 @@ functions:
 
 plugins:
   - serverless-python-requirements
+
