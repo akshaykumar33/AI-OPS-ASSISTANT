@@ -14,9 +14,12 @@ provider:
 
 custom:
   pythonRequirements:
-    dockerizePip: non-linux
+    dockerizePip: false
     layer: true
     slim: true
+    strip: true
+    zip: true
+
 
 package:
   individually: true
