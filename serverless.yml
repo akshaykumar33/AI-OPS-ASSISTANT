@@ -1,9 +1,11 @@
 service: ai-media-studio-backend
+useDotenv: true
 
 provider:
   name: aws
   region: ${opt:region, 'ap-south-1'}
   stage: ${opt:stage, 'prod'}
+  architecture: x86_64
   memorySize: 1024
   timeout: 60
   ecr:
@@ -16,7 +18,7 @@ functions:
     image:
       name: appimage
     environment:
-      GEMINI_API_KEY: ${env:GEMINI_API_KEY}
+      GEMINI_API_KEY: ${env:GEMINI_API_KEY, ''}
       GEMINI_MODEL: ${env:GEMINI_MODEL, 'gemini-2.0-flash'}
       CHROMA_DB_PATH: /tmp/chroma
     events:
