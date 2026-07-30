@@ -1,21 +1,15 @@
-FROM python:3.11-slim
+FROM public.ecr.aws/lambda/python:3.11
 
-# Install FFmpeg and system dependencies for MoviePy and PIL
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
-    fonts-dejavu-core \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Install FFmpeg static binary for MoviePy
+RUN yum install -y tar gzip xz && \
+    curl -s https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar -xJ --strip-components=1 -C /usr/local/bin/ ffmpeg ffprobe || true
 
-WORKDIR /app
+WORKDIR ${LAMBDA_TASK_ROOT}
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir torch --extra-index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt aws-lambda-ric
-
+    pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 CMD [ "src.api.main.handler" ]
-
