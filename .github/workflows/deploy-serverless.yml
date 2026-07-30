@@ -72,6 +72,15 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Cache Serverless Requirements
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/serverless-python-requirements
+          key: ${{ runner.os }}-sls-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-sls-pip-
+
+
 
       - name: Install Serverless Framework & Plugins
         run: |
