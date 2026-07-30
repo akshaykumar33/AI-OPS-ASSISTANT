@@ -19,6 +19,12 @@ custom:
     slim: true
     strip: true
     zip: true
+    noDeploy:
+      - torch
+      - nvidia-*
+      - triton
+      - cuda-*
+
 
 
 package:

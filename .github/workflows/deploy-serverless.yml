@@ -27,7 +27,9 @@ jobs:
       - name: Install Backend Dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt
+
 
       - name: Run Backend Pytest Suite
         env:
@@ -87,8 +89,10 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: 'gemini-2.0-flash'
+          PIP_EXTRA_INDEX_URL: 'https://download.pytorch.org/whl/cpu'
         run: |
           serverless deploy --stage prod --region ap-south-1
+
 
   deploy-frontend:
     name: Deploy Frontend to AWS S3 & CloudFront
