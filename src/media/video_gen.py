@@ -85,8 +85,9 @@ def _generate_veo_clip(
                 "source": f"veo_{model_name}",
             }
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             error_msg = str(e)
+
             if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
                 print(f"[Veo] Rate limited on '{model_name}': quota exhausted. Trying next...")
             elif "404" in error_msg or "NOT_FOUND" in error_msg:

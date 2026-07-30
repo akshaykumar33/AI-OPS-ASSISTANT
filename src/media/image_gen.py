@@ -75,8 +75,9 @@ def generate_scene_image(
                 "height": height,
                 "source": "unsplash_curated",
             }
-    except Exception:
+    except Exception:  # noqa: BLE001, S110
         pass
+
 
     # 3. Canvas Fallback
     bg_color = (20, 25, 45)
