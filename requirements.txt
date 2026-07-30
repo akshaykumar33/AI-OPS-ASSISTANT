@@ -16,6 +16,8 @@ mcp>=1.0.0
 # --- Phase 6: API / Deploy ---
 fastapi>=0.112.2
 uvicorn>=0.30.6
+mangum>=0.17.0
+
 
 # --- Media & Video Production (100% Free Stack) ---
 edge-tts>=6.1.12
