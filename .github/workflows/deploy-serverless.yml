@@ -26,7 +26,10 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Backend Pytest Suite
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python -m pytest tests/ -v
+
 
       - name: Run Code Linter (Ruff)
         run: python -m ruff check src/ tests/
