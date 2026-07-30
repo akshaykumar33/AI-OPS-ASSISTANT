@@ -30,7 +30,6 @@ jobs:
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt
 
-
       - name: Run Backend Pytest Suite
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -53,7 +52,7 @@ jobs:
           npm run build
 
   deploy-backend:
-    name: Deploy Backend to AWS Lambda
+    name: Deploy Backend Container to AWS Lambda
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -66,26 +65,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Cache Serverless Requirements
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/serverless-python-requirements
-          key: ${{ runner.os }}-sls-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-sls-pip-
-
-
-
-      - name: Install Serverless Framework & Plugins
-        run: |
-          npm install -g serverless@3
-          npm install serverless-python-requirements --save-dev
+      - name: Install Serverless Framework
+        run: npm install -g serverless@3
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -94,14 +75,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      - name: Deploy FastAPI Backend via Serverless
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Deploy Container Image via Serverless
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: 'gemini-2.0-flash'
-          PIP_EXTRA_INDEX_URL: 'https://download.pytorch.org/whl/cpu'
-        run: |
-          serverless deploy --stage prod --region ap-south-1
-
+        run: serverless deploy --stage prod --region ap-south-1
 
   deploy-frontend:
     name: Deploy Frontend to AWS S3 & CloudFront

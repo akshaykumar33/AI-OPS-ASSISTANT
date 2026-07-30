@@ -2,47 +2,23 @@ service: ai-media-studio-backend
 
 provider:
   name: aws
-  runtime: python3.11
-  stage: ${opt:stage, 'prod'}
   region: ${opt:region, 'ap-south-1'}
+  stage: ${opt:stage, 'prod'}
   memorySize: 1024
   timeout: 60
-  environment:
-    GEMINI_API_KEY: ${env:GEMINI_API_KEY}
-    GEMINI_MODEL: ${env:GEMINI_MODEL, 'gemini-2.0-flash'}
-    CHROMA_DB_PATH: /tmp/chroma
-
-custom:
-  pythonRequirements:
-    dockerizePip: false
-    useStaticCache: true
-    useDownloadCache: true
-    layer: true
-    slim: true
-    strip: true
-    zip: true
-    noDeploy:
-      - torch
-      - nvidia-*
-      - triton
-      - cuda-*
-
-
-
-
-package:
-  individually: true
-  patterns:
-    - '!frontend/**'
-    - '!.venv/**'
-    - '!node_modules/**'
-    - '!tests/**'
-    - '!.git/**'
-    - '!data/outputs/**'
+  ecr:
+    images:
+      appimage:
+        path: ./
 
 functions:
   api:
-    handler: src.api.main.handler
+    image:
+      name: appimage
+    environment:
+      GEMINI_API_KEY: ${env:GEMINI_API_KEY}
+      GEMINI_MODEL: ${env:GEMINI_MODEL, 'gemini-2.0-flash'}
+      CHROMA_DB_PATH: /tmp/chroma
     events:
       - http:
           path: /
@@ -50,7 +26,3 @@ functions:
       - http:
           path: /{proxy+}
           method: any
-
-plugins:
-  - serverless-python-requirements
-
